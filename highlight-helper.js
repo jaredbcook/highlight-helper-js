@@ -92,6 +92,7 @@
     };
     this._isResizingSelection = false;
     this._previousBoundsHash = null;
+    this._activeAppearanceId = null;
     this._containerRect = null;
     this._additionsRect = null;
 
@@ -872,7 +873,7 @@
         group.dataset.hhStyle = highlightInfo.style;
         let svgContent = '';
         for (const lineRect of highlightInfo.rangeLineRects) {
-          svgContent += this._getStyleString(highlightInfo.style, 'svg', false, highlightInfo.variables, highlightInfo.rangeRect, lineRect);
+          svgContent += this._getStyleString(highlightInfo.style, 'svg', highlightId === this._activeAppearanceId, highlightInfo.variables, highlightInfo.rangeRect, lineRect);
         }
         group.innerHTML = svgContent;
         this._svgBackground.appendChild(group);
@@ -948,6 +949,19 @@
   // Get the active highlight ID (if there is one)
   Highlighter.prototype.getActiveHighlightId = function () {
     return this._activeHighlightId;
+  }
+
+  // Draw a highlight with its active style without activating it (the text selection and focus don't change). Pass null to clear.
+  Highlighter.prototype.setActiveAppearance = function (highlightId = null) {
+    const previousId = this._activeAppearanceId;
+    this._activeAppearanceId = this._highlightsById[highlightId] ? highlightId : null;
+    if (this._activeAppearanceId === previousId) return;
+    const changedIds = [previousId, this._activeAppearanceId].filter(id => this._highlightsById[id]);
+    if (this._options.drawingMode === 'svg') {
+      this.drawHighlights(changedIds);
+    } else {
+      this._rebuildHighlightStylesheet();
+    }
   }
 
   // Get info for specified highlights, or all highlights on the page
@@ -1047,6 +1061,7 @@
 
   // Remove the specified highlights, or all highlights on the page
   Highlighter.prototype.removeHighlights = function (highlightIds = Object.keys(this._highlightsById)) {
+    if (highlightIds.includes(this._activeAppearanceId)) this._activeAppearanceId = null;
     this.deactivateHighlights();
     this._undrawHighlights(highlightIds);
     for (const highlightId of highlightIds) {
@@ -1168,7 +1183,7 @@
     for (const highlightInfo of Object.values(this._highlightsById)) {
       const resolvedMode = highlightInfo.resolvedDrawingMode;
       if (resolvedMode === 'highlight-api' || resolvedMode === 'mark-elements') {
-        const styleString = this._getStyleString(highlightInfo.style, 'css', false, highlightInfo.variables, highlightInfo.rangeRect);
+        const styleString = this._getStyleString(highlightInfo.style, 'css', highlightInfo.highlightId === this._activeAppearanceId, highlightInfo.variables, highlightInfo.rangeRect);
         if (resolvedMode === 'highlight-api') {
           const colorString = this._options.colorDefs[highlightInfo.color];
           cssText += `

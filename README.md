@@ -135,6 +135,8 @@ You can also install it using [npm](https://www.npmjs.com/package/@samuelbradsha
     - **removeSelectionRanges** – Boolean. Indicates whether text selection should be cleared. Default: `true`.
     - **redraw** – Boolean. Indicates whether the highlight should be redrawn. Default: `true`.
 - **getActiveHighlightId()** – Get the highlight ID of the active highlight (if there is one).
+- **setActiveAppearance(highlightId = null)** – Draw the specified highlight with its active style, without activating it. The text selection and focus don't change, so the user can work somewhere else (such as in a note editor for the highlight) while still seeing which highlight it's for. The active appearance stays until it's changed or the highlight is removed. Parameters:
+    - **highlightId** – The `highlightId` of the highlight to show as active. Default: `null` (clears the active appearance).
 - **getHighlightInfo(highlightIds = all, paragraphId = null)** – Get an array of [highlight objects](#highlight-objects) for specified highlight IDs. Highlights will be sorted based on their position on the page. Parameters:
     - **highlightIds** – Array of highlight IDs. Default: all highlights.
     - **paragraphId** – Paragraph ID. Filters highlights based on their start paragraph. Default: `null`.
